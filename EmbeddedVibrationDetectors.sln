@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VibrationDetectors", "VibrationDetectors\VibrationDetectors.csproj", "{CD57AA2A-6E14-45DB-BEEE-C24FFB4DB936}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VibrationDetectorAPI", "VibrationDetectorAPI\VibrationDetectorAPI.csproj", "{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD57AA2A-6E14-45DB-BEEE-C24FFB4DB936}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD57AA2A-6E14-45DB-BEEE-C24FFB4DB936}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD57AA2A-6E14-45DB-BEEE-C24FFB4DB936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD57AA2A-6E14-45DB-BEEE-C24FFB4DB936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {19F6EAA9-8624-4A33-810E-C5220A9329C7}
+	EndGlobalSection
+EndGlobal
