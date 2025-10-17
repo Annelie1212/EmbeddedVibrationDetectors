@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VibrationDetectorAPI.Controllers.Models;
-using VibrationDetectors.Services;
+using VibrationDetectors;
 using VibrationDetectors.Models;
+using VibrationDetectors.Services;
 
 namespace VibrationDetectorAPI.Controllers
 {
+
+    //MainWindow _mainWindow = new MainWindow();
+
     [Route("api/[controller]")]
     [ApiController]
     public class VibrationDetectorsSyncController : ControllerBase

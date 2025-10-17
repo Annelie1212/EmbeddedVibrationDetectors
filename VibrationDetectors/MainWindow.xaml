@@ -45,7 +45,18 @@
                     <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" x:Name="Btn_Trigged" Style="{StaticResource btn-secondary}" Content="" Click="Btn_TriggedState_Click" />
+                    <Button Grid.Column="0" 
+                        x:Name="Btn_Trigged" 
+                        Style="{StaticResource btn-secondary}"
+                        Click="Btn_TriggedState_Click">
+                        <Image x:Name="BellImage" 
+                                    Source="{StaticResource BellIcon}"
+                                    Width="20" Height="20"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+
+                        </Image>
+                    </Button>
                 <!--#endregion-->
                     <Button Grid.Column="1" x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" Click="Btn_Armed_Click" />
             <!--<Button x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" />-->

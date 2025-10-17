@@ -1,6 +1,11 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Windows;
+
+using Microsoft.Extensions.DependencyInjection;
+using VibrationDetectors.Interfaces;
+using VibrationDetectors.Services;
 
 namespace VibrationDetectors
 {
@@ -9,6 +14,7 @@ namespace VibrationDetectors
     /// </summary>
     public partial class App : Application
     {
+
     }
 
 }

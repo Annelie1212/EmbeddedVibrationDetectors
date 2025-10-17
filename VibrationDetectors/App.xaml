@@ -8,82 +8,97 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:VibrationDetectors"
              StartupUri="MainWindow.xaml">
+
     <Application.Resources>
-        <!--<FontFamily x:key=""></FontFamily>-->
-        <Style x:Key="fan-icon" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Comic Sans MS"/>
-            <Setter Property="Text" Value="Start"/>
-        </Style>
 
-        <Style x:Key="btn-primary" TargetType="Button">
-            <Setter Property="Background" Value="Black"/>
-            <Setter Property="Foreground" Value="#00FF00"/>
-            <Setter Property="Margin" Value="10 40 10 20"/>
-            <Setter Property="FontSize" Value="32"/>
-            <Setter Property="Padding" Value="5"/>
-            <!--<Setter Property="Margin" Value="30 0"/>-->
-            <Setter Property="BorderBrush" Value="#00FF00"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
+        <ResourceDictionary>
 
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="4" 
-                                Background="{TemplateBinding Background}" 
-                                Padding="{TemplateBinding Padding}" 
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            
-        </Style>
-        <Style x:Key="btn-secondary" TargetType="Button">
-            <Setter Property="Background" Value="Black"/>
-            <Setter Property="Foreground" Value="#E6D825"/>
-            <Setter Property="Margin" Value="10 40 10 20"/>
-            <Setter Property="FontSize" Value="32"/>
-            <Setter Property="Padding" Value="5"/>
-            <!--<Setter Property="Margin" Value="30 0"/>-->
-            <Setter Property="BorderBrush" Value="#E6D825"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
 
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="4" 
-                         Background="{TemplateBinding Background}" 
-                         Padding="{TemplateBinding Padding}" 
-                         BorderBrush="{TemplateBinding BorderBrush}"
-                         BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="images/bell.xaml"/>
+                <ResourceDictionary Source="images/activity.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-        </Style>
+            <!--<FontFamily x:key=""></FontFamily>-->
+            <Style x:Key="fan-icon" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Comic Sans MS"/>
+                <Setter Property="Text" Value="Start"/>
+            </Style>
 
-        <Style x:Key="lb-primary" TargetType="ListBox">
-            <Setter Property="Background" Value="#7D7D7D"/>
-            
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBox">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
-                            <ScrollViewer Focusable="false">
-                                <ItemsPresenter />
-                            </ScrollViewer>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            
-        </Style>
-            
+            <Style x:Key="btn-primary" TargetType="Button">
+                <Setter Property="Background" Value="Black"/>
+                <Setter Property="Foreground" Value="#00FF00"/>
+                <Setter Property="Margin" Value="10 40 10 20"/>
+                <Setter Property="FontSize" Value="32"/>
+                <Setter Property="Padding" Value="5"/>
+                <!--<Setter Property="Margin" Value="30 0"/>-->
+                <Setter Property="BorderBrush" Value="#00FF00"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Cursor" Value="Hand"/>
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border CornerRadius="4" 
+                        Background="{TemplateBinding Background}" 
+                        Padding="{TemplateBinding Padding}" 
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+
+            </Style>
+            <Style x:Key="btn-secondary" TargetType="Button">
+                <Setter Property="Background" Value="Black"/>
+                <Setter Property="Foreground" Value="#E6D825"/>
+                <Setter Property="Margin" Value="10 40 10 20"/>
+                <Setter Property="FontSize" Value="32"/>
+                <Setter Property="Padding" Value="5"/>
+                <!--<Setter Property="Margin" Value="30 0"/>-->
+                <Setter Property="BorderBrush" Value="#E6D825"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Cursor" Value="Hand"/>
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border CornerRadius="4" 
+                 Background="{TemplateBinding Background}" 
+                 Padding="{TemplateBinding Padding}" 
+                 BorderBrush="{TemplateBinding BorderBrush}"
+                 BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+
+            </Style>
+
+            <Style x:Key="lb-primary" TargetType="ListBox">
+                <Setter Property="Background" Value="#7D7D7D"/>
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBox">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                <ScrollViewer Focusable="false">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+
+            </Style>
+
+
+
+
+        </ResourceDictionary>
+
     </Application.Resources>
 </Application>
