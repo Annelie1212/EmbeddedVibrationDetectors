@@ -16,7 +16,107 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" 
+        <Grid x:Name="RootGrid" Background="Black">
+
+            <!-- Centered square animation box -->
+            <Border x:Name="AnimationBox"
+                    Width="200" Height="200"
+                    Background="LightGray"
+                    BorderBrush="Black" BorderThickness="2"
+                    CornerRadius="6"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    ClipToBounds="True">
+
+                <Canvas Background="Transparent">
+                    <!-- Container for two vectors side by side -->
+                    <StackPanel x:Name="MovingVectorContainer" Orientation="Horizontal">
+                        <StackPanel.RenderTransform>
+                            <TranslateTransform x:Name="VectorTransform" />
+                        </StackPanel.RenderTransform>
+
+                        <!-- Original vector -->
+                        <Viewbox Width="150" Height="150" Margin="0">
+                            <Viewbox.RenderTransform>
+                                <ScaleTransform x:Name="VectorScale1" ScaleX="1.38" ScaleY="1" CenterX="75" CenterY="75"/>
+                            </Viewbox.RenderTransform>
+                            <ContentControl Content="{StaticResource ActivityVector}" />
+                        </Viewbox>
+
+                        <!-- Copy that slides in -->
+                        <Viewbox Width="150" Height="150" Margin="0">
+                            <Viewbox.RenderTransform>
+                                <ScaleTransform x:Name="VectorScale2" ScaleX="1.38" ScaleY="1" CenterX="75" CenterY="75"/>
+                            </Viewbox.RenderTransform>
+                            <ContentControl Content="{StaticResource ActivityVector}" />
+                        </Viewbox>
+                    </StackPanel>
+
+                    <Line x:Name="ThresholdLine"
+          X1="0"
+          X2="{Binding ActualWidth, ElementName=AnimationBox}"
+          Y1="100"
+          Y2="{Binding Y1, ElementName=ThresholdLine}"
+          Stroke="Red"
+          StrokeThickness="2"
+          SnapsToDevicePixels="True" />
+
+                </Canvas>
+            </Border>
+        </Grid>
+
+        <StackPanel Grid.Row="1">
+            <!--<Slider x:Name="Slider_Speed" IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2" Minimum="0.1" Maximum="4"
+            Margin="30 30"-->
+
+            <Slider x:Name="Slider_Threshold" IsSnapToTickEnabled="True" TickFrequency="1" Value="2" Minimum="0" Maximum="10"
+             Margin="30 30"
+             ValueChanged="ThresholdChanged"
+            />
+
+            <Grid x:Name="ButtonGrid" >
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                    x:Name="Btn_Trigged"
+                    Style="{StaticResource btn-secondary}"
+                    Click="Btn_TriggedState_Click">
+                    <Image x:Name="BellImage" 
+                           Source="{StaticResource BellIcon}"
+                           Width="20" Height="20"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center">
+
+                    </Image>
+                </Button>
+
+                <!--#endregion-->
+                <Button Grid.Column="1" x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" Click="Btn_Armed_Click" />
+
+                <!--<Button x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" />-->
+                <!--Bra för skrollning-->
+            </Grid>
+
+            <ListBox x:Name="LB_EventLog" Style="{StaticResource lb-primary}" Height="100" Margin="0 10 0 0" />
+        </StackPanel>
+
+
+
+    </Grid>
+</Window>
+
+
+
+
+
+
+
+
+<!--<TextBlock Grid.Row="0" 
                Foreground="SlateGray"  
                FontSize="72"
                Style="{StaticResource fan-icon}" 
@@ -27,11 +127,11 @@
 
                 </RotateTransform>
             </TextBlock.RenderTransform>
-        </TextBlock>
+        </TextBlock>--><!--
         
         <StackPanel Grid.Row="1">
-            <!--<Slider x:Name="Slider_Speed" IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2" Minimum="0.1" Maximum="4"
-             Margin="30 30"-->
+            --><!--<Slider x:Name="Slider_Speed" IsSnapToTickEnabled="True" TickFrequency="0.1" Value="2" Minimum="0.1" Maximum="4"
+             Margin="30 30"--><!--
              
 
             <Slider x:Name="Slider_Speed" IsSnapToTickEnabled="True" TickFrequency="0.5" Value="2" Minimum="0.5" Maximum="4"
@@ -57,17 +157,17 @@
 
                         </Image>
                     </Button>
-                <!--#endregion-->
+                --><!--#endregion--><!--
                     <Button Grid.Column="1" x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" Click="Btn_Armed_Click" />
-            <!--<Button x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" />-->
-            <!--Bra för skrollning-->
+            --><!--<Button x:Name="Btn_OnOff" Style="{StaticResource btn-primary}" Content="START" />-->
+            <!--Bra för skrollning--><!--
             </Grid> 
 
             <ListBox x:Name="LB_EventLog" Style="{StaticResource lb-primary}" Height="100" Margin="0 10 0 0" />
-        </StackPanel>
+        </StackPanel>-->
 
 
 
-    </Grid>
+    <!--</Grid>
 
-</Window>
+</Window>-->

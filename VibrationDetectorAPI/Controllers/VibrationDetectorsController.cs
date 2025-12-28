@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VibrationDetectorAPI.Controllers.Models;
-using VibrationDetectors;
-using VibrationDetectors.Models;
-using VibrationDetectors.Services;
+//using VibrationDetectors;
+//using VibrationDetectors.Models;
+//using VibrationDetectors.Services;
 
 //https://localhost:7034/api/VibrationDetectors
 
@@ -14,22 +14,22 @@ namespace VibrationDetectorAPI.Controllers
     public class VibrationDetectorsController : ControllerBase
     {
 
-        [HttpPost]
-        public ActionResult<VDChangeValueResponse> SetVDStatus([FromBody] VDChangeValueRequest request)
-        {
+        //[HttpPost]
+        //public ActionResult<VDChangeValueResponse> SetVDStatus([FromBody] VDChangeValueRequest request)
+        //{
 
-            var vdService = new VDServerService();
+        //    var vdService = new VDServerService();
 
-            var response = vdService.SetVibrationDetectorStatus(request);
+        //    var response = vdService.SetVibrationDetectorStatus(request);
            
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
             
-            return Ok(response);
-            //return CreatedAtAction(nameof(GetAllRequests), new { id = request.VibrationDetectorId }, request);
-        }
+        //    return Ok(response);
+        //    //return CreatedAtAction(nameof(GetAllRequests), new { id = request.VibrationDetectorId }, request);
+        //}
 
 
 

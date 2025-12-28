@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option csharp_namespace = "VibrationDetectorAPI";
+package vdstatus;
+
+import "google/protobuf/timestamp.proto";
+
+service VDStatusHandler {
+  rpc GetVDStatus (GetVDStatusRequest) returns (GetVDStatusResponse);
+}
+
+//Ska innehålla allt från VDFetchStatusResponse
+message VDStatus {
+        int32 VibrationDetectorId = 1;
+
+        string DeviceName = 2;
+
+        string Location = 3;
+
+        //Larmad eller inte larmad
+        bool AlarmArmed = 4;
+
+        //Alarm utlöst eller inte   
+        bool AlarmTriggered = 5; 
+        
+        int32 VibrationLevel = 6;
+              
+        int32 VibrationLevelThreshold = 7;
+       
+        bool RequestSuccessful = 8; 
+        
+        string ErrorMessage = 9; 
+}
+
+//Ska innehålla allt från vår VDFetchStatusRequest
+message GetVDStatusRequest {
+    int32 VibrationDetectorId = 1;
+    int32 UserId = 2;
+    google.protobuf.Timestamp UserPanelActionDate = 3;
+}
+
+message GetVDStatusResponse {
+    VDStatus vdstatus = 1;
+}	

@@ -105,5 +105,20 @@ namespace VibrationDetectors
                 LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
 
         }
+
+        private void ThresholdChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+            //if (_skipSliderAction)
+            //{
+            //    _skipSliderAction = false;
+            //    return; // Skip first event
+            //}
+
+            //var sliderValue = Slider_Threshold.Value;
+            //SliderValues.Add(sliderValue);
+            //_hasSliderChanged = true;
+
+        }
     }
 }

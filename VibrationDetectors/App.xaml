@@ -66,11 +66,14 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border CornerRadius="4" 
-                 Background="{TemplateBinding Background}" 
-                 Padding="{TemplateBinding Padding}" 
-                 BorderBrush="{TemplateBinding BorderBrush}"
-                 BorderThickness="{TemplateBinding BorderThickness}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                 Background="{TemplateBinding Background}" 
+                                 Padding="{TemplateBinding Padding}" 
+                                 BorderBrush="{TemplateBinding BorderBrush}"
+                                 BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center">
+                                </ContentPresenter>
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>
