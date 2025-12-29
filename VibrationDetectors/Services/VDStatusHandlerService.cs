@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Grpc.Core;
-using VibrationDetectorAPI; // namespace from your proto
+using GrpcShared; // namespace from your proto
 using System.Collections.Generic;
 
 namespace VibrationDetectors.Services
@@ -42,14 +42,10 @@ namespace VibrationDetectors.Services
 
             List<VDStatus> statuses = new List<VDStatus> { status1, status2 };
 
-            reply.Vdstatus.AddRange(statuses);
+            reply.Vdstatuses.AddRange(statuses);
 
             return Task.FromResult(reply);
 
-            //return Task.FromResult(new GetVDStatusResponse
-            //{
-            //    Vdstatus = status
-            //});
         }
     }
 }

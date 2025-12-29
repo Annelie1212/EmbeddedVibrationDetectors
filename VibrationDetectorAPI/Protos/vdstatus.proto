@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "VibrationDetectorAPI";
+option csharp_namespace = "GrpcShared";
 package vdstatus;
 
 import "google/protobuf/timestamp.proto";
@@ -40,5 +40,5 @@ message GetVDStatusRequest {
 }
 
 message GetVDStatusResponse {
-    repeated VDStatus vdstatus = 1;
+    repeated VDStatus vdstatuses = 1;
 }	

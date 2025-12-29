@@ -3,6 +3,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddGrpcClient<GrpcShared.VDStatusHandler.VDStatusHandlerClient>(o =>
+{
+    o.Address = new Uri("http://localhost:5001");
+}).ConfigureChannel(options =>
+{
+    options.HttpHandler = new HttpClientHandler();
+});
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(x =>
@@ -29,4 +37,13 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+Console.WriteLine("--------------------TEST Vibration Detector API is running... AAAAAAAAAAAAAAA");
+
+
+
+//var testClient = new VibrationDetectorAPI.TestClientGrpc();
+//testClient.Testserver();
+
 app.Run();
+
+

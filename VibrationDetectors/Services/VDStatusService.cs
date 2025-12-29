@@ -12,7 +12,7 @@ using static VibrationDetectors.Models.Enumerators;
 
 namespace VibrationDetectors.Services
 {
-    public class VDServerService
+    public class VDStatusService
     {
         //private static MainWindow _mainWindow;
 
@@ -25,7 +25,7 @@ namespace VibrationDetectors.Services
 
 
 
-        public VDServerService()
+        public VDStatusService()
         {
 
         }

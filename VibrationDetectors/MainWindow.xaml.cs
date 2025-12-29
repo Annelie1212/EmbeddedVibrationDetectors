@@ -7,13 +7,21 @@ using System.Windows.Threading;
 using VibrationDetectors.Models;
 using VibrationDetectors.ViewModels;
 using VibrationDetectors.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
+using Microsoft.AspNetCore.Hosting;
+
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace VibrationDetectors
 {
 
     public partial class MainWindow : Window
+
     {
+        private IHost _host;
         private string _logFilePath = "";
         private ObservableCollection<string>? _eventLog;
 
@@ -24,13 +32,46 @@ namespace VibrationDetectors
         public MainWindow()
         {
             InitializeComponent();
+            StartGrpcServer();
             InitializeFeatures();
             _vm = new MainWindowViewModel();
 
             _vibrationWorker = new VibrationSignalWorker();
             _vibrationWorker.Start();
         }
+        private void StartGrpcServer()
+        {
+            _host = Host.CreateDefaultBuilder()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.ConfigureKestrel(options =>
+                    {
+                        options.ListenLocalhost(5001, listenOptions =>
+                        {
+                            listenOptions.Protocols = HttpProtocols.Http2;
+                        });
+                    });
 
+                    webBuilder.ConfigureServices(services =>
+                    {
+                        services.AddGrpc();
+                    });
+
+                    webBuilder.Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            endpoints.MapGrpcService<VDStatusHandlerService>();
+                        });
+                    });
+                })
+                .Build();
+
+            _host.Start();
+            Console.WriteLine("gRPC server started on http://localhost:5001 with HTTP/2");
+
+        }
         //This methods takes everything from the ViewModel and updates the view accordingly.
         public void UpdateView()
         {
