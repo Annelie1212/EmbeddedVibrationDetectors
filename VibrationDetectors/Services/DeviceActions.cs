@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using VibrationDetectors.Models;
+using static VibrationDetectors.Models.Enumerators;
 
 namespace VibrationDetectors.Services
 {
@@ -29,6 +30,19 @@ namespace VibrationDetectors.Services
         public static bool GetTriggedState()
         { 
             return VibrationDetector.AlarmTriggered;
+        }
+        public static string SetThresholdLevel(double sliderValue)
+        {
+            //Jag vill skriva till cacheminnet dvs använd Update!
+
+            int userPanelAction = (int)DeviceAction.SetThreshold;
+
+            VibrationDetector.VibrationLevelThreshold = (int)sliderValue;
+
+            var logMessage = "Threshold set successfully!";
+            //_______TILLFÄLLIG--------------
+            //string logMessage = await VDClientService.SetVDAsync(sliderValue, userPanelAction);
+            return logMessage;
         }
     }
 }

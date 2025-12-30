@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using VibrationDetectors.Models;
@@ -77,6 +78,8 @@ namespace VibrationDetectors.Services
             double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
                                    Math.Sin(2.0 * Math.PI * u2);
             double value = _mean + _sigma * randStdNormal;
+
+            Debug.WriteLine($"Generated Vibration Signal: {value}");
 
             // Clamp between 0 and 10
             return Math.Max(0, Math.Min(10, value));

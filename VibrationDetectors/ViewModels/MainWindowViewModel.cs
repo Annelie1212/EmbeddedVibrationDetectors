@@ -13,6 +13,8 @@ namespace VibrationDetectors.ViewModels
         public LogViewModel LogVM { get; set; } = new LogViewModel();
         public SliderViewModel SliderVM { get; set; } = new SliderViewModel();
 
+        public VibrationViewModel VibrationVM { get; set; } = new VibrationViewModel();
+
         public class ButtonViewModel
         {
             public string OnOffContent { get; set; }
@@ -66,6 +68,33 @@ namespace VibrationDetectors.ViewModels
 
         public class SliderViewModel
         {
+            public int SliderValue { get; set; }
+            public double LinePositionSliderValue { get; set; }
+            public void UpdateSliderViewModel()
+            {
+                SliderValue = VibrationDetector.VibrationLevelThreshold;
+                LinePositionSliderValue = (double)(-10 * VibrationDetector.VibrationLevelThreshold) + 100;
+            }
+        }
+
+        public class VibrationViewModel
+        {
+            public int VibrationLevel { get; set; }
+
+            public double VibrationSpeedValue { get; set; }
+
+            public double VectorScaleValue { get; set; }
+
+            public void UpdateVibrationViewModel()
+            {
+                VibrationLevel = VibrationDetector.VibrationLevel;
+
+                VibrationSpeedValue = -0.188 * (double)VibrationLevel + 2.0;
+                VectorScaleValue = (double)VibrationLevel / 5 * 0.85;
+
+
+                
+            }
         }
 
 
