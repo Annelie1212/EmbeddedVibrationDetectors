@@ -140,7 +140,7 @@ namespace VibrationDetectors.Services
                     else if (request.UserPanelAction == DeviceAction.ArmDevice)
                     {
 
-                        VibrationDetector.Btn_Armed();
+                        DeviceActions.Btn_Armed();
                         
                         var response = new VDChangeValueResponse()
                         {
@@ -153,7 +153,7 @@ namespace VibrationDetectors.Services
                     }
                     else if (request.UserPanelAction == DeviceAction.TriggerDevice)
                     {
-                        VibrationDetector.Btn_Trigged();
+                        DeviceActions.Btn_Trigged();
 
                         var response = new VDChangeValueResponse()
                         {

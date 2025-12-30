@@ -29,28 +29,5 @@ namespace VibrationDetectors.Models
         //Tröskelvärdets maxvärde ska vara 10.
         public static int VibrationLevelThreshold { get; set; } = 7;
 
-
-        public static void Btn_Armed()
-        {
-            DeviceActions.ToggleArmedState();
-
-            if (DeviceActions.GetTriggedState() == true)
-            {
-                DeviceActions.ToggleTriggedState();
-            }
-
-        }
-
-        public static void Btn_Trigged()
-        {
-            if (!DeviceActions.GetArmedState())
-            {
-                //make sure the button does nothing if the device is not armed
-            }
-            else
-            {
-                DeviceActions.ToggleTriggedState();
-            }
-        }
     }
 }

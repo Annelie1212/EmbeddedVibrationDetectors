@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Logging;
 
 namespace VibrationDetectors
 {
@@ -31,15 +32,20 @@ namespace VibrationDetectors
         private DispatcherTimer _timer;
 
         public List<DeviceLog> DeviceLogs { get; set; } = new List<DeviceLog>();
-        public List<double> SliderValues { get; set; } = new List<double>();
-        double _previousSliderValues = -1;
-        bool _hasSliderChanged = false;
+
+        //public List<double> SliderValues { get; set; } = new List<double>();
+        //double _previousSliderValues = -1;
+        //bool _hasSliderChanged = false;
 
         bool _skipSliderAction = true;
 
         MainWindowViewModel _vm;
 
         private VibrationSignalWorker _vibrationWorker; // keep as a field
+
+        //------SLIDER CHANGE HANDLING VARS------
+        private DispatcherTimer _sliderDebounceTimer;
+        private double _pendingSliderValue;
 
         public MainWindow()
         {
@@ -54,8 +60,23 @@ namespace VibrationDetectors
             _vibrationWorker = new VibrationSignalWorker();
             _vibrationWorker.Start();
 
+            _sliderDebounceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+
+            _sliderDebounceTimer.Tick += SliderDebounceTimer_Tick;
+
+
             DoWork();
         }
+
+
+
+
+
+        
+
         private void StartWorker()
         {
             _timer = new DispatcherTimer();
@@ -63,61 +84,62 @@ namespace VibrationDetectors
             _timer.Tick += (s, e) => DoWork();
             _timer.Start();
         }
-        public async void PostSliderValue()
-        {
-            //Check length of SliderValues list
-            if ((SliderValues.Count == _previousSliderValues) && (_hasSliderChanged == true))
-            {
+        //public async void PostSliderValue()
+        //{
+        //    //Check length of SliderValues list
+        //    if ((SliderValues.Count == _previousSliderValues) && (_hasSliderChanged == true))
+        //    {
 
-                Console.WriteLine("Slider has not changed for 1 second -> posting new value to API.");
+        //        Console.WriteLine("Slider has not changed for 1 second -> posting new value to API.");
 
-                var sliderValue = SliderValues.Last();
+        //        var sliderValue = SliderValues.Last();
 
-                string logMessage = DeviceActions.SetThresholdLevel(sliderValue);
-                LogMessage(logMessage);
+        //        string logMessage = DeviceActions.SetThresholdLevel(sliderValue);
+        //        LogMessage(logMessage);
 
-                SyncUserPanelWPF();
+        //        SyncUserPanelWPF();
 
-                //double testvalueSpeed = _vibrationSpeedValue;
+        //        //double testvalueSpeed = _vibrationSpeedValue;
 
-                SliderValues.Clear();
-                _previousSliderValues = -1;
-                _hasSliderChanged = false;
-            }
-            else
-            {
-                _previousSliderValues = SliderValues.Count;
-                Console.WriteLine("Slider has changed, waiting for it to stabilize...");
-            }
-        }
+        //        SliderValues.Clear();
+        //        _previousSliderValues = -1;
+        //        _hasSliderChanged = false;
+        //    }
+        //    else
+        //    {
+        //        _previousSliderValues = SliderValues.Count;
+        //        Console.WriteLine("Slider has changed, waiting for it to stabilize...");
+        //    }
+        //}
         
-        public void SaveSliderValueInCache()
-        {
-            //Check length of SliderValues list
-            if ((SliderValues.Count == _previousSliderValues) && (_hasSliderChanged == true))
-            {
+        //public void SaveSliderValueInCache()
+        //{
+        //    //Check length of SliderValues list
+        //    if ((SliderValues.Count == _previousSliderValues) && (_hasSliderChanged == true))
+        //    {
 
-                Console.WriteLine("Slider has not changed for 1 second -> posting new value to API.");
+        //        Console.WriteLine("Slider has not changed for 1 second -> posting new value to API.");
 
-                var sliderValue = SliderValues.Last();
+        //        var sliderValue = SliderValues.Last();
 
-                string logMessage = DeviceActions.SetThresholdLevel(sliderValue);
-                LogMessage(logMessage);
+        //        string logMessage = DeviceActions.SetThresholdLevel(sliderValue);
+        //        LogMessage(logMessage);
 
-                SyncUserPanelWPF();
+        //        SyncUserPanelWPF();
 
-                //double testvalueSpeed = _vibrationSpeedValue;
+        //        //double testvalueSpeed = _vibrationSpeedValue;
 
-                SliderValues.Clear();
-                _previousSliderValues = -1;
-                _hasSliderChanged = false;
-            }
-            else
-            {
-                _previousSliderValues = SliderValues.Count;
-                Console.WriteLine("Slider has changed, waiting for it to stabilize...");
-            }
-        }
+        //        SliderValues.Clear();
+        //        _previousSliderValues = -1;
+        //        _hasSliderChanged = false;
+        //    }
+        //    else
+        //    {
+        //        _previousSliderValues = SliderValues.Count;
+        //        Console.WriteLine("Slider has changed, waiting for it to stabilize...");
+        //    }
+        //}
+
         public async void SyncUserPanelWPF()
         {
             //1. Hämtar status från modellen via API:et
@@ -165,19 +187,7 @@ namespace VibrationDetectors
             LogMessage(dl.LogMessage);
 
         }
-        private void ScaleY_VibrationLevelChanged()
-        {
-            //double newValue = (double)newValueInt / 5 * 0.85;
-
-            // Update ScaleY on both vectors
-            //VectorScale1.ScaleY = newValue;
-            //VectorScale2.ScaleY = newValue;
-
-            VectorScale1.ScaleY = _vm.VibrationVM.VectorScaleValue;
-            VectorScale2.ScaleY = _vm.VibrationVM.VectorScaleValue;
-
-
-        }
+        
 
         private void VibrationSpeed_ValueChanged()
         {
@@ -190,8 +200,8 @@ namespace VibrationDetectors
             //HorizontalLine.Y1 = 100;
 
             //--------------TILLBAKA SEN---------------
-            PostSliderValue();
-            SaveSliderValueInCache();
+            //PostSliderValue();
+            //SaveSliderValueInCache();
 
             SaveVibrationLevelInCache();
 
@@ -211,22 +221,43 @@ namespace VibrationDetectors
             VibrationDetector.VibrationLevel = (int)_vibrationWorker.SignalValue;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        
+     
+        
+        //This methods takes everything from the ViewModel and updates the view accordingly.
+        public void UpdateView()
         {
-            // Hook up slider events
-            //ScaleYSlider.ValueChanged += ScaleYSlider_ValueChanged;
-            //SpeedSlider.ValueChanged += VibrationSpeed_ValueChanged;
+            Btn_OnOff.Content = _vm.ButtonVM.OnOffContent;
+            Btn_OnOff.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.OnOffForeground));
+            Btn_OnOff.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.OnOffBorderBrush));
+            //Btn_Trigged.Content = _vm.ButtonVM.TrigContent;
+            BellImage.Source = ChangeColor(BellImage.Source, _vm.ButtonVM.TrigContent);
+            Btn_Trigged.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.TrigForeground));
+            Btn_Trigged.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.TrigBorderBrush));
 
-            this.Dispatcher.InvokeAsync(() =>
-            {
-                // Ensure layout is measured so ActualHeight is valid
-                AnimationBox.UpdateLayout();
-                if (AnimationBox.ActualHeight > 0)
-                    _linePositionSlider_Value = AnimationBox.ActualHeight / 2;
-            });
+            ThresholdLine.Y1 = _vm.SliderVM.LinePositionSliderValue;
 
-            StartAnimation();
+            //Update vibrationinput view
+            ScaleY_VibrationLevelChanged();
+            VibrationSpeed_ValueChanged();
+
+            //Update slider position - not allowed to be new slider solution.
+            //Slider_Threshold.Value = _vm.SliderVM.SliderValue;
+
         }
+
+        public void UpdateViewModels()
+        {
+            _vm.ButtonVM.UpdateButtonViewModel();
+            _vm.SliderVM.UpdateSliderViewModel();
+            _vm.VibrationVM.UpdateVibrationViewModel();
+        }
+
+        
+
+        //-----------------------------------INITIALIZATION-----------------------------------------
+        //---------------------------------------------------------------------------------------
+
         private void StartAnimation()
         {
             // Ensure layout is ready
@@ -265,6 +296,47 @@ namespace VibrationDetectors
 
             VectorTransform.BeginAnimation(TranslateTransform.XProperty, _animation);
         }
+
+        private void InitializeSliderFromModel()
+        {
+            _skipSliderAction = true;
+
+            Slider_Threshold.Value = VibrationDetector.VibrationLevelThreshold;
+
+            _skipSliderAction = false;
+
+            // Force visual update
+            UpdateViewModels();
+            UpdateView();
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Hook up slider events
+            //ScaleYSlider.ValueChanged += ScaleYSlider_ValueChanged;
+            //SpeedSlider.ValueChanged += VibrationSpeed_ValueChanged;
+
+            this.Dispatcher.InvokeAsync(() =>
+            {
+                // Ensure layout is measured so ActualHeight is valid
+                InitializeSliderFromModel();
+                AnimationBox.UpdateLayout();
+                if (AnimationBox.ActualHeight > 0)
+                    _linePositionSlider_Value = AnimationBox.ActualHeight / 2;
+            });
+
+            StartAnimation();
+        }
+
+        public void InitializeFeatures()
+        {
+            _eventLog = [];
+            LB_EventLog.ItemsSource = _eventLog;
+
+
+
+        }
+
         private void StartGrpcServer()
         {
             _host = Host.CreateDefaultBuilder()
@@ -298,48 +370,76 @@ namespace VibrationDetectors
             Console.WriteLine("gRPC server started on http://localhost:5001 with HTTP/2");
 
         }
-        //This methods takes everything from the ViewModel and updates the view accordingly.
-        public void UpdateView()
+
+        //-----------------------------------GRAPHICS WINDOW-----------------------------------------
+        //---------------------------------------------------------------------------------------
+
+        private void ScaleY_VibrationLevelChanged()
         {
-            Btn_OnOff.Content = _vm.ButtonVM.OnOffContent;
-            Btn_OnOff.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.OnOffForeground));
-            Btn_OnOff.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.OnOffBorderBrush));
-            //Btn_Trigged.Content = _vm.ButtonVM.TrigContent;
-            BellImage.Source = ChangeColor(BellImage.Source, _vm.ButtonVM.TrigContent);
-            Btn_Trigged.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.TrigForeground));
-            Btn_Trigged.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(_vm.ButtonVM.TrigBorderBrush));
+            //double newValue = (double)newValueInt / 5 * 0.85;
 
-            ThresholdLine.Y1 = _vm.SliderVM.LinePositionSliderValue;
+            // Update ScaleY on both vectors
+            //VectorScale1.ScaleY = newValue;
+            //VectorScale2.ScaleY = newValue;
 
-            //Update vibrationinput view
-            ScaleY_VibrationLevelChanged();
-            VibrationSpeed_ValueChanged();
+            VectorScale1.ScaleY = _vm.VibrationVM.VectorScaleValue;
+            VectorScale2.ScaleY = _vm.VibrationVM.VectorScaleValue;
 
-            //Update slider position
-            Slider_Threshold.Value = _vm.SliderVM.SliderValue;
 
         }
 
-        public void UpdateViewModels()
+        //-----------------------------------VIBRATION WORKER-----------------------------------------
+        //---------------------------------------------------------------------------------------
+
+        //-----------------------------------SLIDER-----------------------------------------
+        //---------------------------------------------------------------------------------------
+        private void Slider_Speed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            _vm.ButtonVM.UpdateButtonViewModel();
-            _vm.SliderVM.UpdateSliderViewModel();
-            _vm.VibrationVM.UpdateVibrationViewModel();
+
         }
 
-        public void InitializeFeatures()
+        private void ThresholdChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            _eventLog = [];
-            LB_EventLog.ItemsSource = _eventLog;
+            if (_skipSliderAction)
+            {
+                _skipSliderAction = false;
+                return;
+            }
 
+            // Store latest value
+            _pendingSliderValue = Slider_Threshold.Value;
 
-           
+            // Restart debounce timer
+            _sliderDebounceTimer.Stop();
+            _sliderDebounceTimer.Start();
+        }
+
+        private void SliderDebounceTimer_Tick(object? sender, EventArgs e)
+        {
+            _sliderDebounceTimer.Stop();
+
+            // Save ONCE after 1s inactivity
+            string logMessage = DeviceActions.SetThresholdLevel(_pendingSliderValue);
+            LogMessage(logMessage);
+
+            UpdateViewModels();
+            UpdateView();
+
+            Debug.WriteLine($"Slider committed value: {_pendingSliderValue}");
         }
 
 
+        //-----------------------------------BUTTONS-----------------------------------------
+        //---------------------------------------------------------------------------------------
         public void Btn_Armed_Click(object sender, RoutedEventArgs e)
         {
-            VibrationDetector.Btn_Armed();
+            List<string> logList = DeviceActions.Btn_Armed();
+            
+            foreach (var logMessage in logList)
+            {
+                LogMessage(logMessage);
+            }
+
             _vm.ButtonVM.UpdateButtonViewModel();
             UpdateView();
 
@@ -348,10 +448,14 @@ namespace VibrationDetectors
 
         public void Btn_TriggedState_Click(object sender, RoutedEventArgs e)
         {
-            VibrationDetector.Btn_Trigged();
+            string logMessage = DeviceActions.Btn_Trigged();
+            LogMessage(logMessage);
+
+            //DeviceActions.Btn_Trigged();
             _vm.ButtonVM.UpdateButtonViewModel();
             UpdateView();
         }
+
         public ImageSource ChangeColor(ImageSource source, string color)
         {
             // 1. Get the original DrawingImage from the Image
@@ -370,10 +474,10 @@ namespace VibrationDetectors
             return modifiableDrawingImage;
 
         }
-        private void Slider_Speed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
 
-        }
+        //-----------------------------------LOG MESSAGE-----------------------------------------
+        //---------------------------------------------------------------------------------------
+
         private void LogMessage(string message)
         {
             var line = @$"{DateTime.Now:yyy-MM-dd HH:mm:ss} : {message}";
@@ -393,25 +497,32 @@ namespace VibrationDetectors
 
         }
 
-        private void ThresholdChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
+        //private void ThresholdChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        //{
 
-            if (_skipSliderAction)
-            {
-                _skipSliderAction = false;
-                return; // Skip first event
-            }
+        //    if (_skipSliderAction)
+        //    {
+        //        _skipSliderAction = false;
+        //        return; // Skip first event
+        //    }
 
-            var sliderValue = Slider_Threshold.Value;
-            SliderValues.Add(sliderValue);
-            _hasSliderChanged = true;
+        //    var sliderValue = Slider_Threshold.Value;
+        //    SliderValues.Add(sliderValue);
+        //    _hasSliderChanged = true;
 
-            DeviceActions.SetThresholdLevel(sliderValue);
+        //    DeviceActions.SetThresholdLevel(sliderValue);
 
-            UpdateViewModels();
+        //    UpdateViewModels();
 
-            UpdateView();
+        //    UpdateView();
 
-        }
+        //}
+
+
+
+
+
+
+
     }
 }
