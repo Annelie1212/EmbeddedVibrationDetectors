@@ -1,20 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿using AlarmDatabaseLibrary.Context;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using VibrationDetectors.Models;
-using VibrationDetectors.ViewModels;
 using VibrationDetectors.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-using Microsoft.AspNetCore.Hosting;
-
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Logging;
+using VibrationDetectors.ViewModels;
+using static VibrationDetectors.Models.Enumerators;
 
 namespace VibrationDetectors
 {
@@ -47,12 +47,20 @@ namespace VibrationDetectors
         private DispatcherTimer _sliderDebounceTimer;
         private double _pendingSliderValue;
 
-        public MainWindow()
+        private DbLogService _dbLogService;
+
+        private readonly AlarmDbContext _context;
+
+        public MainWindow(DbLogService dbLogService)
         {
             InitializeComponent();
             Loaded += MainWindow_Loaded;
             StartGrpcServer();
+            
             InitializeFeatures();
+
+            _dbLogService = dbLogService;
+
             StartWorker();
 
             _vm = new MainWindowViewModel();
@@ -155,38 +163,37 @@ namespace VibrationDetectors
         }
 
         //Gammal UPDATE-metod som inte längre används
-        public void UpdateUserPanelView(DeviceLog dl)
-        {
-            //Animation update utifrån slider value + threshold + vibration level
+        //public void UpdateUserPanelView(DeviceLog dl)
+        //{
+        //    //Animation update utifrån slider value + threshold + vibration level
 
-            //Vibration level
-            //ScaleY_VibrationLevelChanged(VibrationDetector.VibrationLevel);
-            _vibrationSpeedValue = (double)VibrationDetector.VibrationLevel;
-            VibrationSpeed_ValueChanged();
+        //    //Vibration level
+        //    //ScaleY_VibrationLevelChanged(VibrationDetector.VibrationLevel);
+        //    _vibrationSpeedValue = (double)VibrationDetector.VibrationLevel;
+        //    VibrationSpeed_ValueChanged();
 
-            //Armknapp
-            Btn_OnOff.Content = DeviceActions.GetArmedState() ? "STOP" : "START";
-            Btn_OnOff.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(DeviceActions.GetArmedState() ? "#F40B0B" : "#00FF00")); // Red or Green
-            Btn_OnOff.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(DeviceActions.GetArmedState() ? "#F40B0B" : "#00FF00")); // Red or Green
+        //    //Armknapp
+        //    Btn_OnOff.Content = DeviceActions.GetArmedState() ? "STOP" : "START";
+        //    Btn_OnOff.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(DeviceActions.GetArmedState() ? "#F40B0B" : "#00FF00")); // Red or Green
+        //    Btn_OnOff.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(DeviceActions.GetArmedState() ? "#F40B0B" : "#00FF00")); // Red or Green
 
-            //Triggknapp
-            BellImage.Source = ChangeColor(BellImage.Source, DeviceActions.GetTriggedState() ? "#F40B0B" : "#E6D825");
-            Btn_Trigged.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(DeviceActions.GetTriggedState() ? "#F40B0B" : "#E6D825")); // Yellow
+        //    //Triggknapp
+        //    BellImage.Source = ChangeColor(BellImage.Source, DeviceActions.GetTriggedState() ? "#F40B0B" : "#E6D825");
+        //    Btn_Trigged.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(DeviceActions.GetTriggedState() ? "#F40B0B" : "#E6D825")); // Yellow
 
-            //THRESHOLD 0-10
-            //Slider Röd linje och threshold.
-            //Tex Threshold = 7;
-            //AnimationBox.ActualHeight = 200;
-            //Röd linje = 140 (7/10 * 200) pixlar från toppen.
-            Slider_Threshold.Value = VibrationDetector.VibrationLevelThreshold;
-            _linePositionSlider_Value = (double)(-10 * VibrationDetector.VibrationLevelThreshold) + 100;
-            ThresholdLine.Y1 = _linePositionSlider_Value;
+        //    //THRESHOLD 0-10
+        //    //Slider Röd linje och threshold.
+        //    //Tex Threshold = 7;
+        //    //AnimationBox.ActualHeight = 200;
+        //    //Röd linje = 140 (7/10 * 200) pixlar från toppen.
+        //    Slider_Threshold.Value = VibrationDetector.VibrationLevelThreshold;
+        //    _linePositionSlider_Value = (double)(-10 * VibrationDetector.VibrationLevelThreshold) + 100;
+        //    ThresholdLine.Y1 = _linePositionSlider_Value;
 
 
-            //Loggning
-            LogMessage(dl.LogMessage);
-
-        }
+        //    //Loggning
+        //    LogMessage(dl.LogMessage);
+        //}
         
 
         private void VibrationSpeed_ValueChanged()
@@ -420,7 +427,9 @@ namespace VibrationDetectors
 
             // Save ONCE after 1s inactivity
             string logMessage = DeviceActions.SetThresholdLevel(_pendingSliderValue);
-            LogMessage(logMessage);
+            LogMessage(logMessage,DeviceAction.SetThreshold);
+
+            
 
             UpdateViewModels();
             UpdateView();
@@ -437,7 +446,7 @@ namespace VibrationDetectors
             
             foreach (var logMessage in logList)
             {
-                LogMessage(logMessage);
+                LogMessage(logMessage, DeviceAction.Error); //Change later to real
             }
 
             _vm.ButtonVM.UpdateButtonViewModel();
@@ -449,7 +458,7 @@ namespace VibrationDetectors
         public void Btn_TriggedState_Click(object sender, RoutedEventArgs e)
         {
             string logMessage = DeviceActions.Btn_Trigged();
-            LogMessage(logMessage);
+            LogMessage(logMessage,DeviceAction.Error);
 
             //DeviceActions.Btn_Trigged();
             _vm.ButtonVM.UpdateButtonViewModel();
@@ -478,7 +487,7 @@ namespace VibrationDetectors
         //-----------------------------------LOG MESSAGE-----------------------------------------
         //---------------------------------------------------------------------------------------
 
-        private void LogMessage(string message)
+        private void LogMessage(string message, DeviceAction deviceAction)
         {
             var line = @$"{DateTime.Now:yyy-MM-dd HH:mm:ss} : {message}";
             _eventLog?.Add(line);
@@ -494,6 +503,55 @@ namespace VibrationDetectors
 
             if (LB_EventLog.Items.Count > 0)
                 LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
+
+            var logEntry = new DeviceLog
+            {
+                
+                ActionLogDateTime = DateTime.Now,
+                DeviceAction = deviceAction,
+
+                OldUserValue = -1, // not tracked, get from database later.
+
+                NewUserValue = ActionToValue(deviceAction),
+
+                UserId = VibrationDetector.UserId,
+                DeviceId = VibrationDetector.DeviceId,
+                DeviceName = DeviceActions.GetDeviceName(),
+                Location = VibrationDetector.Location,
+                AlarmArmed = DeviceActions.GetArmedState(),
+                AlarmTriggered = DeviceActions.GetTriggedState(),
+                VibrationLevel = VibrationDetector.VibrationLevel,
+                VibrationLevelThreshold = VibrationDetector.VibrationLevelThreshold,
+                LogMessage = message,
+            };  
+            DeviceLogs.Add(logEntry);
+
+            _dbLogService.SeedOne(logEntry);
+
+        }
+
+        //This has the purpose of a dictionary between enum and user inputted values.
+        public int ActionToValue(DeviceAction action)
+        {
+            switch(action)
+            {
+                case DeviceAction.ArmDevice:
+                    return VibrationDetector.AlarmArmed ? 1 : 0;
+                case DeviceAction.DisarmDevice:
+                    return VibrationDetector.AlarmArmed ? 1 : 0;
+                case DeviceAction.TriggerDevice:
+                    return VibrationDetector.AlarmTriggered ? 1 : 0;
+                case DeviceAction.ResetDevice:
+                    return VibrationDetector.AlarmTriggered ? 1 : 0;
+                case DeviceAction.SetThreshold:
+                    return VibrationDetector.VibrationLevelThreshold;
+                case DeviceAction.TriggerFailure:
+                    return VibrationDetector.AlarmTriggered ? 1 : 0;
+                default:
+                    return -1; // Unknown action
+
+            }
+
 
         }
 

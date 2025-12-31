@@ -9,15 +9,22 @@ namespace VibrationDetectors.Models
 {
     public class DeviceLog
     {
-        public int DeviceLogId { get; set; }
+        public int VibrationDetectorStatusLogId { get; set; }
         public int UserId { get; set; }
-        public string DeviceType { get; set; }
+        public string DeviceName { get; set; }
         public int DeviceId { get; set; }
-        public DateTime LogTime { get; set; }
-        public DeviceAction DeviceAction { get; set; }
-        public bool DeviceActionSuccess { get; set; }
-        public string ErrorMessage { get; set; }
+        public DateTime ActionLogDateTime { get; set; }
 
+        //string i databasen så man måste konvertera.
+        public DeviceAction DeviceAction { get; set; }
+        //public bool DeviceActionSuccess { get; set; }
+
+        public int OldUserValue { get; set; }
+        public int NewUserValue { get; set; }
+
+        public string Location { get; set; }
+
+        public string ErrorMessage { get; set; }
 
         //Larmad eller inte larmad
         public bool AlarmArmed { get; set; } = false;
@@ -52,7 +59,7 @@ namespace VibrationDetectors.Models
                     message = "Annelies unknown action.";
                     break;
             }
-            var dateString = LogTime.ToString("yyyy-MM-dd HH:mm:ss");
+            var dateString = ActionLogDateTime.ToString("yyyy-MM-dd HH:mm:ss");
             LogMessage = dateString + ": " + message;
         }
 
@@ -60,12 +67,12 @@ namespace VibrationDetectors.Models
         {
             //DeviceLogId = sr.VibrationDetectorId;
             UserId = sres.VibrationDetectorId;
-            DeviceType = "VibrationDetector";
+            DeviceName = "VibrationDetector";
             DeviceId = sres.VibrationDetectorId;
-            LogTime = DateTime.Now;
+            ActionLogDateTime = DateTime.Now;
             //TODO Ta från request!!!!
             DeviceAction = (DeviceAction)99;
-            DeviceActionSuccess = sres.RequestSuccessful;
+            //DeviceActionSuccess = sres.RequestSuccessful;
             ErrorMessage = sres.ErrorMessage;
             AlarmArmed = sres.AlarmArmed;
             AlarmTriggered = sres.AlarmTriggered;

@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VibrationDetectors", "Vibra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VibrationDetectorAPI", "VibrationDetectorAPI\VibrationDetectorAPI.csproj", "{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlarmDatabaseLibrary", "AlarmDatabaseLibrary\AlarmDatabaseLibrary.csproj", "{60FB47CA-1BDD-406C-A30D-52DAD92E3C99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlarmDatabaseApp", "AlarmDatabaseApp\AlarmDatabaseApp.csproj", "{8FEA5A96-6DF6-4641-844E-53BDFEBECB8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B2044EC-1187-4C5F-9B2A-6CDEC7E89019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60FB47CA-1BDD-406C-A30D-52DAD92E3C99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60FB47CA-1BDD-406C-A30D-52DAD92E3C99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60FB47CA-1BDD-406C-A30D-52DAD92E3C99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60FB47CA-1BDD-406C-A30D-52DAD92E3C99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FEA5A96-6DF6-4641-844E-53BDFEBECB8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FEA5A96-6DF6-4641-844E-53BDFEBECB8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FEA5A96-6DF6-4641-844E-53BDFEBECB8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FEA5A96-6DF6-4641-844E-53BDFEBECB8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
