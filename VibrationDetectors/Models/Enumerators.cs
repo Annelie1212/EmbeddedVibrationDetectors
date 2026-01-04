@@ -14,6 +14,15 @@ namespace VibrationDetectors.Models
             TriggerFailure = 5,
             Error = 99
         }
+
+        public enum StatusAndErrorType
+        {
+            Success = 0,
+            DeviceIdNotFound = 1,
+            FailedToTriggerAlarm = 2
+
+        }
+
     }
 }
 

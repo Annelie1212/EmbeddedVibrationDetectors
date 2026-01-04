@@ -64,6 +64,7 @@ namespace VibrationDetectors.ViewModels
 
         public class LogViewModel
         {
+            //TODO: Implement log view model properties and methods here.
         }
 
         public class SliderViewModel

@@ -6,7 +6,6 @@
 //using System;
 //using System.Configuration;
 //using System.Data;
-using System.Windows;
 ////using System.Windows;
 //using VibrationDetectors.Interfaces;
 //using VibrationDetectors.Services;
@@ -14,8 +13,11 @@ using System.Windows;
 //using Microsoft.AspNetCore.Http;
 
 using AlarmDatabaseLibrary.Context;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Windows;
 using VibrationDetectors.Services;
 
 
@@ -88,22 +90,49 @@ namespace VibrationDetectors
 
         public App()
         {
-            Host = Microsoft.Extensions.Hosting.Host
+            {
+
+
+
+
+                Host = Microsoft.Extensions.Hosting.Host
                 .CreateDefaultBuilder()
-                .ConfigureServices(services =>
+                .ConfigureServices((context, services) =>
                 {
-                    services.AddDbContext<AlarmDbContext>();
+                    // 🔹 EF Core (SAME AS CONSOLE APP)
+                    services.AddDbContext<AlarmDbContext>(options =>
+                        options.UseSqlServer(
+                            context.Configuration.GetConnectionString("AlarmDatabase")));
+
+                    // 🔹 Application services
                     services.AddTransient<DbLogService>();
+
+                    // 🔹 Main window
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
+            }
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            Host.Start();
-            Host.Services.GetRequiredService<MainWindow>().Show();
             base.OnStartup(e);
+
+            Host.Start();
+
+            //TESTKOD FÖR APPSETTINGS.JSON OCH DI
+            var config = Host.Services.GetRequiredService<IConfiguration>();
+            var cs = config.GetConnectionString("AlarmDatabase");
+            MessageBox.Show(cs ?? "Connection string not found!");
+
+            var mainWindow = Host.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Host.Dispose();
+            base.OnExit(e);
         }
 
     }
