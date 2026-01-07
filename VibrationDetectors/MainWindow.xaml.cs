@@ -32,7 +32,7 @@ namespace VibrationDetectors
         private IHost _host;
         private string _logFilePath = "";
         private DoubleAnimation _animation;
-        private ObservableCollection<string>? _eventLog;
+        //private ObservableCollection<string>? _eventLog;
 
         private double _vibrationSpeedValue = 0;
         private double _linePositionSlider_Value = 0;
@@ -46,15 +46,18 @@ namespace VibrationDetectors
         //double _previousSliderValues = -1;
         //bool _hasSliderChanged = false;
 
-        bool _skipSliderAction = true;
+        //bool _skipSliderAction = true;
+
+        //------SLIDER CHANGE HANDLING VARS------
+        private DispatcherTimer _sliderDebounceTimer;
 
         MainWindowViewModel _vm;
 
         private VibrationSignalWorker _vibrationWorker; // keep as a field
 
         //------SLIDER CHANGE HANDLING VARS------
-        private DispatcherTimer _sliderDebounceTimer;
-        private double _pendingSliderValue;
+        //private DispatcherTimer _sliderDebounceTimer;
+        //private double _pendingSliderValue;
 
         private DbLogService _dbLogService;
 
@@ -64,10 +67,18 @@ namespace VibrationDetectors
 
         public MainWindow(DbLogService dbLogService)
         {
+
+            _sliderDebounceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+
+            _sliderDebounceTimer.Tick += SliderDebounceTimer_Tick;
+
             InitializeComponent();
             Loaded += MainWindow_Loaded;
             StartGrpcServer();
-            
+
             InitializeFeatures();
 
             _dbLogService = dbLogService;
@@ -79,25 +90,21 @@ namespace VibrationDetectors
             _vibrationWorker = new VibrationSignalWorker();
             _vibrationWorker.Start();
 
-            _sliderDebounceTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
 
-            _sliderDebounceTimer.Tick += SliderDebounceTimer_Tick;
 
             //Get status from database. I want to read using my DbLogServices now!
             DeviceLog dvtest = _dbLogService.ReadOne(VibrationDetector.DeviceId);
-            try
-            {
-                //TODO: check why the oldvalue becomes 0 when error reading from database!!!
-                Debug.WriteLine($"error:{dvtest.ErrorMessage} oldvalue{dvtest.OldUserValue}");
-            }
-            catch (Exception ex)
-            {
-                
-                Debug.WriteLine($"Error reading from database!");
-            }
+
+            //try
+            //{
+            //    //TODO: check why the oldvalue becomes 0 when error reading from database!!!
+            //    Debug.WriteLine($"error:{dvtest.ErrorMessage} oldvalue{dvtest.OldUserValue}");
+            //}
+            //catch (Exception ex)
+            //{
+
+            //    Debug.WriteLine($"Error reading from database!");
+            //}
 
             DeviceLog = dvtest;
 
@@ -141,7 +148,7 @@ namespace VibrationDetectors
         //        Console.WriteLine("Slider has changed, waiting for it to stabilize...");
         //    }
         //}
-        
+
         //public void SaveSliderValueInCache()
         //{
         //    //Check length of SliderValues list
@@ -216,13 +223,13 @@ namespace VibrationDetectors
         //    //Loggning
         //    LogMessage(dl.LogMessage);
         //}
-        
+
         private void VibrationSpeed_ValueChanged()
         {
             // Update speed by restarting the animation
             StartAnimation();
         }
-        
+
         //This worker is only working with getting vibration signals from outside world.
         private void DoWork()
         {
@@ -232,7 +239,7 @@ namespace VibrationDetectors
             //--------------TILLBAKA SEN---------------
             //PostSliderValue();
             //SaveSliderValueInCache();
-            
+
 
             SaveVibrationLevelInCache();
 
@@ -258,7 +265,7 @@ namespace VibrationDetectors
             VibrationDetector.UserId = dl.UserId;
             VibrationDetector.DeviceName = dl.DeviceName;
             VibrationDetector.Location = dl.Location;
-            VibrationDetector.AlarmArmed = dl.AlarmArmed;   
+            VibrationDetector.AlarmArmed = dl.AlarmArmed;
             VibrationDetector.AlarmTriggered = dl.AlarmTriggered;
             VibrationDetector.VibrationLevel = dl.VibrationLevel;
             VibrationDetector.VibrationLevelThreshold = dl.VibrationLevelThreshold;
@@ -296,7 +303,7 @@ namespace VibrationDetectors
             _vm.VibrationVM.UpdateVibrationViewModel();
         }
 
-        
+
 
         //-----------------------------------INITIALIZATION-----------------------------------------
         //---------------------------------------------------------------------------------------
@@ -342,11 +349,23 @@ namespace VibrationDetectors
 
         private void InitializeSliderFromModel()
         {
-            _skipSliderAction = true;
+            //GAMMALT FÖRSLAG
+            ////_skipSliderAction = true;
 
             Slider_Threshold.Value = VibrationDetector.VibrationLevelThreshold;
 
-            _skipSliderAction = false;
+            ////_skipSliderAction = false;
+
+
+            ////NYTT FÖRLSLAG
+            //// Unsubscribe event temporarily
+            //Slider_Threshold.ValueChanged -= ThresholdChanged;
+
+            //// Set the initial slider value
+            //Slider_Threshold.Value = VibrationDetector.VibrationLevelThreshold;
+
+            //// Subscribe again
+            //Slider_Threshold.ValueChanged += ThresholdChanged;
 
             // Force visual update
             UpdateViewModels();
@@ -358,6 +377,9 @@ namespace VibrationDetectors
             // Hook up slider events
             //ScaleYSlider.ValueChanged += ScaleYSlider_ValueChanged;
             //SpeedSlider.ValueChanged += VibrationSpeed_ValueChanged;
+
+            DeviceActions._skipSliderAction = true;
+
 
             this.Dispatcher.InvokeAsync(() =>
             {
@@ -373,10 +395,11 @@ namespace VibrationDetectors
 
         public void InitializeFeatures()
         {
-            _eventLog = [];
-            LB_EventLog.ItemsSource = _eventLog;
+            //_eventLog = [];
+            //LB_EventLog.ItemsSource = _eventLog;
 
 
+            LB_EventLog.ItemsSource = DeviceActions._eventLog;
 
         }
 
@@ -436,208 +459,239 @@ namespace VibrationDetectors
 
         //-----------------------------------SLIDER-----------------------------------------
         //---------------------------------------------------------------------------------------
-        private void Slider_Speed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-
-        }
 
         private void ThresholdChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            LatestDateTimeStamp = DateTime.Now;
-
-
-            if (_skipSliderAction)
-            {
-                _skipSliderAction = false;
+            // Only trigger if user is interacting with the slider
+            if (!Slider_Threshold.IsMouseCaptureWithin)
                 return;
-            }
 
-            // Store latest value
-            _pendingSliderValue = Slider_Threshold.Value;
+            DeviceActions.ThresholdChangedAction(Slider_Threshold.Value);
 
             // Restart debounce timer
             _sliderDebounceTimer.Stop();
             _sliderDebounceTimer.Start();
+
         }
         // Save ONCE after 1s inactivity
         private void SliderDebounceTimer_Tick(object? sender, EventArgs e)
         {
-
             //0. Stop the timer
             _sliderDebounceTimer.Stop();
 
-            //1. Get old user value before it is overwritten.
-            var oldUserValue = VibrationDetector.VibrationLevelThreshold;
+            DeviceLog tempDeviceLog = DeviceActions.SliderDebounceTimer_Tick_Stop();
 
-            //2. Set threshold level, nothing else!
-            DeviceActions.SetThresholdLevel(_pendingSliderValue);
-
-            //3 Get new user value.
-            var newUserValue = VibrationDetector.VibrationLevelThreshold;
-
-            //3.1. Create success log messsage
-            string logMessage = DeviceLog.BuildLogMessage(LatestDateTimeStamp,
-                                                          oldUserValue, 
-                                                          newUserValue,
-                                                          DeviceAction.SetThreshold,
-                                                          StatusAndErrorType.Success);
-
-            //4. add logmessage to eventlog view.
-            _eventLog?.Add(logMessage);
+            //7. add devicelog to list.
+            DeviceLogs.Add(tempDeviceLog);
 
             //5. Scroll to the latest log entry.
             if (LB_EventLog.Items.Count > 0)
                 LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
 
-            //6. Update devicelog object.
-            DeviceLog.UpdateDeviceLog(LatestDateTimeStamp,
-                            DeviceAction.SetThreshold,
-                            oldUserValue,
-                            newUserValue,
-                            VibrationDetector.UserId,
-                            VibrationDetector.DeviceId,
-                            VibrationDetector.DeviceName,
-                            VibrationDetector.Location,
-                            StatusAndErrorType.Success,
-                            VibrationDetector.AlarmArmed,
-                            VibrationDetector.AlarmTriggered,
-                            VibrationDetector.VibrationLevel,
-                            VibrationDetector.VibrationLevelThreshold,
-                            logMessage
-                            );
-
-            //7. add devicelog to list.
-            DeviceLogs.Add(DeviceLog);
-
             //8. add devicelog to database.
-            _dbLogService.CreateOne(DeviceLog);
+            _dbLogService.CreateOne(tempDeviceLog);
 
             //9. Update viewmodels and view.
             UpdateViewModels();
 
             //10. Update view.
             UpdateView();
-
-            //11. Debug output
-            Debug.WriteLine($"Slider committed value: {_pendingSliderValue}");
         }
 
-        public void CompleteLogAction(bool oldUserValue, bool newUserValue, DeviceAction deviceAction)
-        {
-            //3.1. Create success log messsage
-            string logMessage = DeviceLog.BuildLogMessage(LatestDateTimeStamp,
-                                                          (oldUserValue == true) ? 1 : 0,
-                                                          (newUserValue == true) ? 1 : 0,
-                                                          deviceAction,
-                                                          StatusAndErrorType.Success);
+        //public void CompleteLogAction(bool oldUserValue, bool newUserValue, DeviceAction deviceAction, StatusAndErrorType errorType)
+        //{
+        //    //3.1. Create success log messsage
+        //    string logMessage = DeviceLog.BuildLogMessage(LatestDateTimeStamp,
+        //                                                  (oldUserValue == true) ? 1 : 0,
+        //                                                  (newUserValue == true) ? 1 : 0,
+        //                                                  deviceAction,
+        //                                                  errorType);
 
-            //4. add logmessage to eventlog view.
-            _eventLog?.Add(logMessage);
+        //    //4. add logmessage to eventlog view.
+        //    _eventLog?.Add(logMessage);
 
-            //5. Scroll to the latest log entry.
-            if (LB_EventLog.Items.Count > 0)
-                LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
+        //    //5. Scroll to the latest log entry.
+        //    if (LB_EventLog.Items.Count > 0)
+        //        LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
 
-            //6. Update devicelog object.
-            DeviceLog.UpdateDeviceLog(LatestDateTimeStamp,
-                            deviceAction,
-                            (oldUserValue == true) ? 1 : 0,
-                            (newUserValue == true) ? 1 : 0,
-                            VibrationDetector.UserId,
-                            VibrationDetector.DeviceId,
-                            VibrationDetector.DeviceName,
-                            VibrationDetector.Location,
-                            StatusAndErrorType.Success,
-                            VibrationDetector.AlarmArmed,
-                            VibrationDetector.AlarmTriggered,
-                            VibrationDetector.VibrationLevel,
-                            VibrationDetector.VibrationLevelThreshold,
-                            logMessage
-                            );
+        //    //6. Update devicelog object.
+        //    DeviceLog.UpdateDeviceLog(LatestDateTimeStamp,
+        //                    deviceAction,
+        //                    (oldUserValue == true) ? 1 : 0,
+        //                    (newUserValue == true) ? 1 : 0,
+        //                    VibrationDetector.UserId,
+        //                    VibrationDetector.DeviceId,
+        //                    VibrationDetector.DeviceName,
+        //                    VibrationDetector.Location,
+        //                    //StatusAndErrorType.Success,
+        //                    errorType,
+        //                    VibrationDetector.AlarmArmed,
+        //                    VibrationDetector.AlarmTriggered,
+        //                    VibrationDetector.VibrationLevel,
+        //                    VibrationDetector.VibrationLevelThreshold,
+        //                    logMessage
+        //                    );
 
-            //7. add devicelog to list.
-            DeviceLogs.Add(DeviceLog);
+        //    //7. add devicelog to list.
+        //    DeviceLogs.Add(DeviceLog);
 
-            //8. add devicelog to database.
-            _dbLogService.CreateOne(DeviceLog);
-        }
+        //    //8. add devicelog to database.
+        //    _dbLogService.CreateOne(DeviceLog);
+        //}
 
         //-----------------------------------BUTTONS-----------------------------------------
         //---------------------------------------------------------------------------------------
+
         public void Btn_Armed_Click(object sender, RoutedEventArgs e)
         {
-            //int logMessageCount = 1;
-            //if ( VibrationDetector.AlarmArmed == true && VibrationDetector.AlarmTriggered == true)
-            //{
+            LatestDateTimeStamp = DateTime.Now;
+            StatusAndErrorType errorType = StatusAndErrorType.Success;
 
-            //}
-
-            //1. Get old user value before it is overwritten.
-            var oldUserValue = VibrationDetector.AlarmArmed;
-
-            //2. Set threshold armstate, nothing else!
-            DeviceAction deviceAction = DeviceActions.Btn_Armed();
-            
-            //3 Get new user value.
-            var newUserValue = VibrationDetector.AlarmArmed;
-
-            CompleteLogAction(oldUserValue, newUserValue, deviceAction);
-
-            if (VibrationDetector.AlarmArmed == true && VibrationDetector.AlarmTriggered == true)
+            //THIS MUST COME BEFORE DISARMING!!!
+            if (DeviceActions.GetTriggedState() == true)
             {
-                //1. Get old user value before it is overwritten.
-                oldUserValue = VibrationDetector.AlarmTriggered;
-
-                deviceAction = DeviceActions.Btn_Trigged();
-
-                //3 Get new user value.
-                newUserValue = VibrationDetector.AlarmTriggered;
-
-                CompleteLogAction(oldUserValue, newUserValue, deviceAction);
+                //DeviceActions.ToggleTriggedState();
+                Btn_TriggedState_Call();
             }
 
+            var oldUserValue = VibrationDetector.AlarmArmed;
+
+            //DeviceActions.Btn_Armed();
+            DeviceActions.ToggleArmedState();
+
+            var newUserValue = VibrationDetector.AlarmArmed;
+
+            DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.ArmDevice, errorType);
 
 
-            //old2. Get log messages from action
-            //List<string> logList = DeviceActions.Btn_Armed();
-
-
-
-            //9. Update viewmodels and view.
             UpdateViewModels();
-
-            //10. Update view.
             UpdateView();
-
-            //11. Debug output
-            Debug.WriteLine($"Worker: , DetectorLevel={VibrationDetector.VibrationLevel}");
-
-            //foreach (var logMessage in logList)
-            //{
-            //    //LogMessage(logMessage, DeviceAction.Error); //Change later to real
-            //    //Buildlogmessage
-            //}
-
-            //_vm.ButtonVM.UpdateButtonViewModel();
-            //UpdateView();
-
-
-
-
-
         }
 
         public void Btn_TriggedState_Click(object sender, RoutedEventArgs e)
         {
-            DeviceAction logMessage = DeviceActions.Btn_Trigged();
-            
-            //LogMessage(logMessage,DeviceAction.Error);
-            //Buildlogmessage
+            LatestDateTimeStamp = DateTime.Now;
+            StatusAndErrorType errorType = StatusAndErrorType.Success;
+
+            var oldUserValue = VibrationDetector.AlarmTriggered;
 
             //DeviceActions.Btn_Trigged();
-            //_vm.ButtonVM.UpdateButtonViewModel();
-            //UpdateView();
+            if (!DeviceActions.GetArmedState())
+            {
+                //make sure the button does nothing if the device is not armed
+                errorType = StatusAndErrorType.FailedToTriggerAlarm;
+            }
+            else
+            {
+                DeviceActions.ToggleTriggedState();
+            }
+
+            var newUserValue = VibrationDetector.AlarmTriggered;
+
+            DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
+
+            UpdateViewModels();
+            UpdateView();
         }
+
+        public void Btn_TriggedState_Call()
+        {
+            //Better to update date here again!
+            LatestDateTimeStamp = DateTime.Now;
+            StatusAndErrorType errorType = StatusAndErrorType.Success;
+
+            var oldUserValue = VibrationDetector.AlarmTriggered;
+
+            //DeviceActions.Btn_Trigged();
+            if (!DeviceActions.GetArmedState())
+            {
+                //make sure the button does nothing if the device is not armed
+                errorType = StatusAndErrorType.FailedToTriggerAlarm;
+            }
+            else
+            {
+                DeviceActions.ToggleTriggedState();
+            }
+
+            var newUserValue = VibrationDetector.AlarmTriggered;
+
+            DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
+
+            UpdateViewModels();
+            UpdateView();
+        }
+
+        //public void Btn_Armed_Click(object sender, RoutedEventArgs e)
+        //{
+        //    //int logMessageCount = 1;
+        //    //if ( VibrationDetector.AlarmArmed == true && VibrationDetector.AlarmTriggered == true)
+        //    //{
+
+        //    //}
+
+        //    //1. Get old user value before it is overwritten.
+        //    var oldUserValue = VibrationDetector.AlarmArmed;
+
+        //    //2. Set threshold armstate, nothing else!
+        //    DeviceAction deviceAction = DeviceActions.Btn_Armed();
+
+        //    //3 Get new user value.
+        //    var newUserValue = VibrationDetector.AlarmArmed;
+
+        //    CompleteLogAction(oldUserValue, newUserValue, deviceAction);
+
+        //    if (VibrationDetector.AlarmArmed == true && VibrationDetector.AlarmTriggered == true)
+        //    {
+        //        //1. Get old user value before it is overwritten.
+        //        oldUserValue = VibrationDetector.AlarmTriggered;
+
+        //        deviceAction = DeviceActions.Btn_Trigged();
+
+        //        //3 Get new user value.
+        //        newUserValue = VibrationDetector.AlarmTriggered;
+
+        //        CompleteLogAction(oldUserValue, newUserValue, deviceAction);
+        //    }
+
+
+
+        //    //old2. Get log messages from action
+        //    //List<string> logList = DeviceActions.Btn_Armed();
+
+
+
+        //    //9. Update viewmodels and view.
+        //    UpdateViewModels();
+
+        //    //10. Update view.
+        //    UpdateView();
+
+        //    //11. Debug output
+        //    Debug.WriteLine($"Worker: , DetectorLevel={VibrationDetector.VibrationLevel}");
+
+        //    //foreach (var logMessage in logList)
+        //    //{
+        //    //    //LogMessage(logMessage, DeviceAction.Error); //Change later to real
+        //    //    //Buildlogmessage
+        //    //}
+
+        //    //_vm.ButtonVM.UpdateButtonViewModel();
+        //    //UpdateView();
+
+
+        //}
+
+        //public void Btn_TriggedState_Click(object sender, RoutedEventArgs e)
+        //{
+        //    DeviceAction logMessage = DeviceActions.Btn_Trigged();
+
+        //    //LogMessage(logMessage,DeviceAction.Error);
+        //    //Buildlogmessage
+
+        //    //DeviceActions.Btn_Trigged();
+        //    //_vm.ButtonVM.UpdateButtonViewModel();
+        //    //UpdateView();
+        //}
 
         public ImageSource ChangeColor(ImageSource source, string color)
         {
@@ -666,20 +720,20 @@ namespace VibrationDetectors
         //This has the purpose of a dictionary between enum and user inputted values.
         public int ActionToValue(DeviceAction action)
         {
-            switch(action)
+            switch (action)
             {
                 case DeviceAction.ArmDevice:
                     return VibrationDetector.AlarmArmed ? 1 : 0;
-                case DeviceAction.DisarmDevice:
-                    return VibrationDetector.AlarmArmed ? 1 : 0;
+                //case DeviceAction.DisarmDevice:
+                //    return VibrationDetector.AlarmArmed ? 1 : 0;
                 case DeviceAction.TriggerDevice:
                     return VibrationDetector.AlarmTriggered ? 1 : 0;
-                case DeviceAction.ResetDevice:
-                    return VibrationDetector.AlarmTriggered ? 1 : 0;
+                //case DeviceAction.ResetDevice:
+                //    return VibrationDetector.AlarmTriggered ? 1 : 0;
                 case DeviceAction.SetThreshold:
                     return VibrationDetector.VibrationLevelThreshold;
-                case DeviceAction.TriggerFailure:
-                    return VibrationDetector.AlarmTriggered ? 1 : 0;
+                //case DeviceAction.TriggerFailure:
+                //    return VibrationDetector.AlarmTriggered ? 1 : 0;
                 default:
                     return -1; // Unknown action
 

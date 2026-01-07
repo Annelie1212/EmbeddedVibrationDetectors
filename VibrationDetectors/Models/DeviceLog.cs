@@ -51,8 +51,8 @@ namespace VibrationDetectors.Models
         }
         public void AddErrorToLM(StatusAndErrorType statusAndErrorType)
         {
-            
-            switch(statusAndErrorType)
+
+            switch (statusAndErrorType)
             {
                 case StatusAndErrorType.Success:
                     LogMessage += " - Success - ";
@@ -61,7 +61,9 @@ namespace VibrationDetectors.Models
                     LogMessage += " - Error: Device ID not found - ";
                     break;
                 case StatusAndErrorType.FailedToTriggerAlarm:
-                    LogMessage += " - Error: Failed to trigger alarm - ";
+                    //LogMessage += " - Error: Failed to trigger alarm - ";
+                    //TODO: make message longer in database? 100 too short.
+                    LogMessage += " - Error - ";
                     break;
                 //case StatusAndStatusAndErrorType.ConnectionFailed:
                 //LogMessage += " - Error: Connection failed - ";
@@ -83,11 +85,11 @@ namespace VibrationDetectors.Models
             {
                 oldValue = (oldValueInt == 1) ? "On" : "Off";
                 newValue = (newValueInt == 1) ? "On" : "Off";
-                message = $"Changed {deviceAction} from {oldValue} to {newValue} successfully.";
+                message = $"Changed {deviceAction} from {oldValue} to {newValue}.";
             }
             else if (deviceActionInt == 2)
             {
-                message = $"Changed {deviceAction} from {oldValueInt} to {newValueInt} successfully.";
+                message = $"Changed {deviceAction} from {oldValueInt} to {newValueInt}.";
             }
 
             else
@@ -101,9 +103,9 @@ namespace VibrationDetectors.Models
 
 
         public string BuildLogMessage(DateTime dt,
-                                      int oldValueInt, 
-                                      int newValueInt, 
-                                      DeviceAction da, 
+                                      int oldValueInt,
+                                      int newValueInt,
+                                      DeviceAction da,
                                       StatusAndErrorType statusAndErrorType)
         {
 
@@ -113,14 +115,14 @@ namespace VibrationDetectors.Models
             //2. status StatusAndErrorType
             AddErrorToLM(statusAndErrorType);
             //3. Add message with details.
-            AddMessageToLM(da,oldValueInt,newValueInt);
+            AddMessageToLM(da, oldValueInt, newValueInt);
 
             return LogMessage;
         }
 
         //private void LogMessage2(string message, DeviceAction deviceAction)
         //{
-            
+
 
         //    //try
         //    //{
@@ -153,7 +155,7 @@ namespace VibrationDetectors.Models
         //    //    VibrationLevelThreshold = VibrationDetector.VibrationLevelThreshold,
         //    //    LogMessage = message,
         //    //};
- 
+
         //}
 
         //används ej längre. kanske använda senare.

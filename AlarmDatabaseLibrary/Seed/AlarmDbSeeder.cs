@@ -18,17 +18,17 @@ namespace AlarmDatabaseLibrary.Seed
         }
 
         public void Seed()
-        { 
+        {
             if (_context.VibrationDetectorStatusLogs.Any())
                 return;
 
             _context.VibrationDetectorStatusLogs.Add(new VibrationDetectorStatusLog
             {
                 ActionLogDateTime = DateTime.UtcNow,
-                DeviceAction = "arm",
+                DeviceAction = "ArmDevice",
                 OldUserValue = 0,
                 NewUserValue = 0,
-                UserId = 99,
+                UserId = 1,
                 DeviceId = 1,
                 DeviceName = "Sensor01",
                 Location = "Basement",
@@ -36,7 +36,7 @@ namespace AlarmDatabaseLibrary.Seed
                 AlarmTriggered = false,
                 VibrationLevel = 0,
                 VibrationLevelThreshold = 5,
-                LogMessage = "Initial seed log entry"   
+                LogMessage = "Initial seed log entry"
             });
 
             _context.SaveChanges();

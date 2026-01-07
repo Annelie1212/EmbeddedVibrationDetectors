@@ -7,7 +7,7 @@
         Background="Black"
         
         mc:Ignorable="d"
-        Title="VibrationDetectors" Height="700" Width="400">
+        Title="VibrationDetectors" Height="700" Width="600">
         
 
     <Grid Margin="20">
