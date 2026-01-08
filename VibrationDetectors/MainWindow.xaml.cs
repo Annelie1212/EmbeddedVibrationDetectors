@@ -38,6 +38,8 @@ namespace VibrationDetectors
         private double _linePositionSlider_Value = 0;
         private DispatcherTimer _timer;
 
+        public DeviceActions _deviceActions;
+
         public List<DeviceLog> DeviceLogs { get; set; } = new List<DeviceLog>();
 
         public DeviceLog DeviceLog { get; set; } = new DeviceLog();
@@ -65,8 +67,9 @@ namespace VibrationDetectors
 
         private DateTime LatestDateTimeStamp;
 
-        public MainWindow(DbLogService dbLogService)
+        public MainWindow(DbLogService dbLogService,DeviceActions deviceActions)
         {
+            _deviceActions = deviceActions;
 
             _sliderDebounceTimer = new DispatcherTimer
             {
@@ -479,23 +482,25 @@ namespace VibrationDetectors
             //0. Stop the timer
             _sliderDebounceTimer.Stop();
 
-            DeviceLog tempDeviceLog = DeviceActions.SliderDebounceTimer_Tick_Stop();
+            DeviceLog tempDeviceLog = _deviceActions.SliderDebounceTimer_Tick_Stop();
 
-            //7. add devicelog to list.
-            DeviceLogs.Add(tempDeviceLog);
+            PostActionTasks(tempDeviceLog);
 
-            //5. Scroll to the latest log entry.
-            if (LB_EventLog.Items.Count > 0)
-                LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
+            ////7. add devicelog to list.
+            //DeviceLogs.Add(tempDeviceLog);
 
-            //8. add devicelog to database.
-            _dbLogService.CreateOne(tempDeviceLog);
+            ////5. Scroll to the latest log entry.
+            //if (LB_EventLog.Items.Count > 0)
+            //    LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
 
-            //9. Update viewmodels and view.
-            UpdateViewModels();
+            ////8. add devicelog to database.
+            //_dbLogService.CreateOne(tempDeviceLog);
 
-            //10. Update view.
-            UpdateView();
+            ////9. Update viewmodels and view.
+            //UpdateViewModels();
+
+            ////10. Update view.
+            //UpdateView();
         }
 
         //public void CompleteLogAction(bool oldUserValue, bool newUserValue, DeviceAction deviceAction, StatusAndErrorType errorType)
@@ -544,82 +549,114 @@ namespace VibrationDetectors
 
         public void Btn_Armed_Click(object sender, RoutedEventArgs e)
         {
-            LatestDateTimeStamp = DateTime.Now;
-            StatusAndErrorType errorType = StatusAndErrorType.Success;
+            //LatestDateTimeStamp = DateTime.Now;
+            //StatusAndErrorType errorType = StatusAndErrorType.Success;
 
-            //THIS MUST COME BEFORE DISARMING!!!
-            if (DeviceActions.GetTriggedState() == true)
-            {
-                //DeviceActions.ToggleTriggedState();
-                Btn_TriggedState_Call();
-            }
+            ////THIS MUST COME BEFORE DISARMING!!!
+            //if (DeviceActions.GetTriggedState() == true)
+            //{
+            //    //DeviceActions.ToggleTriggedState();
+            //    Btn_TriggedState_Call();
+            //}
 
-            var oldUserValue = VibrationDetector.AlarmArmed;
+            //var oldUserValue = VibrationDetector.AlarmArmed;
 
-            //DeviceActions.Btn_Armed();
-            DeviceActions.ToggleArmedState();
+            ////DeviceActions.Btn_Armed();
+            //DeviceActions.ToggleArmedState();
 
-            var newUserValue = VibrationDetector.AlarmArmed;
+            //var newUserValue = VibrationDetector.AlarmArmed;
 
-            DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.ArmDevice, errorType);
+            //DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.ArmDevice, errorType);
 
+            
+            var tempDeviceLog = _deviceActions.Btn_Armed_Click_Action();
+            PostActionTasks(tempDeviceLog);
 
-            UpdateViewModels();
-            UpdateView();
         }
 
         public void Btn_TriggedState_Click(object sender, RoutedEventArgs e)
         {
-            LatestDateTimeStamp = DateTime.Now;
-            StatusAndErrorType errorType = StatusAndErrorType.Success;
+            //LatestDateTimeStamp = DateTime.Now;
+            //StatusAndErrorType errorType = StatusAndErrorType.Success;
 
-            var oldUserValue = VibrationDetector.AlarmTriggered;
+            //var oldUserValue = VibrationDetector.AlarmTriggered;
 
-            //DeviceActions.Btn_Trigged();
-            if (!DeviceActions.GetArmedState())
-            {
-                //make sure the button does nothing if the device is not armed
-                errorType = StatusAndErrorType.FailedToTriggerAlarm;
-            }
-            else
-            {
-                DeviceActions.ToggleTriggedState();
-            }
+            ////DeviceActions.Btn_Trigged();
+            //if (!DeviceActions.GetArmedState())
+            //{
+            //    //make sure the button does nothing if the device is not armed
+            //    errorType = StatusAndErrorType.FailedToTriggerAlarm;
+            //}
+            //else
+            //{
+            //    DeviceActions.ToggleTriggedState();
+            //}
 
-            var newUserValue = VibrationDetector.AlarmTriggered;
+            //var newUserValue = VibrationDetector.AlarmTriggered;
 
-            DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
+            // DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
+            var tempDeviceLog = _deviceActions.Btn_TriggedState_Action();
 
-            UpdateViewModels();
-            UpdateView();
+            PostActionTasks(tempDeviceLog);
+
+            //DeviceLogs.Add(tempDeviceLog);
+
+            //if (LB_EventLog.Items.Count > 0)
+            //    LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
+
+            //_dbLogService.CreateOne(tempDeviceLog);
+
+            //UpdateViewModels();
+            //UpdateView();
         }
 
-        public void Btn_TriggedState_Call()
+        public void PostActionTasks(DeviceLog tempDeviceLog)
         {
-            //Better to update date here again!
-            LatestDateTimeStamp = DateTime.Now;
-            StatusAndErrorType errorType = StatusAndErrorType.Success;
+            //7. add devicelog to list.
+            //TODO: This list is not used, but right now it only stores one action, not double actions
+            //like stop arm + stop trigg so maybe fix later???
+            DeviceLogs.Add(tempDeviceLog);
 
-            var oldUserValue = VibrationDetector.AlarmTriggered;
+            //5. Scroll to the latest log entry.
+            if (LB_EventLog.Items.Count > 0)
+                LB_EventLog.ScrollIntoView(LB_EventLog.Items[^1]);
 
-            //DeviceActions.Btn_Trigged();
-            if (!DeviceActions.GetArmedState())
-            {
-                //make sure the button does nothing if the device is not armed
-                errorType = StatusAndErrorType.FailedToTriggerAlarm;
-            }
-            else
-            {
-                DeviceActions.ToggleTriggedState();
-            }
+            //8. add devicelog to database.
+            //_dbLogService.CreateOne(tempDeviceLog);
 
-            var newUserValue = VibrationDetector.AlarmTriggered;
-
-            DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
-
+            //9. Update viewmodels and view.
             UpdateViewModels();
+
+            //10. Update view.
             UpdateView();
         }
+
+        //public void Btn_TriggedState_Call()
+        //{
+        //    //Better to update date here again!
+        //    LatestDateTimeStamp = DateTime.Now;
+        //    StatusAndErrorType errorType = StatusAndErrorType.Success;
+
+        //    var oldUserValue = VibrationDetector.AlarmTriggered;
+
+        //    //DeviceActions.Btn_Trigged();
+        //    if (!DeviceActions.GetArmedState())
+        //    {
+        //        //make sure the button does nothing if the device is not armed
+        //        errorType = StatusAndErrorType.FailedToTriggerAlarm;
+        //    }
+        //    else
+        //    {
+        //        DeviceActions.ToggleTriggedState();
+        //    }
+
+        //    var newUserValue = VibrationDetector.AlarmTriggered;
+
+        //    DeviceActions.CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
+
+        //    UpdateViewModels();
+        //    UpdateView();
+        //}
 
         //public void Btn_Armed_Click(object sender, RoutedEventArgs e)
         //{

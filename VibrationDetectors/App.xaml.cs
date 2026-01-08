@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Windows;
+using VibrationDetectors.Models;
 using VibrationDetectors.Services;
 
 
@@ -106,6 +107,8 @@ namespace VibrationDetectors
 
                     // 🔹 Application services
                     services.AddTransient<DbLogService>();
+
+                    services.AddScoped<DeviceActions>();
 
                     // 🔹 Main window
                     services.AddSingleton<MainWindow>();

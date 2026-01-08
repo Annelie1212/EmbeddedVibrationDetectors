@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 using VibrationDetectors.Models;
 using VibrationDetectors.Services;
@@ -17,11 +18,11 @@ namespace VibrationDetectors.Models
     
 
 
-    public static class DeviceActions
+    public class DeviceActions
     {
 
-              
-        
+        private DbLogService _dbLogService;
+
         private static double _pendingSliderValue;
         public static bool _skipSliderAction = false;
 
@@ -30,6 +31,12 @@ namespace VibrationDetectors.Models
         public static DateTime LatestDateTimeStamp = DateTime.Now;
 
         //public static bool RunningState { get; private set; } = false;
+
+        public DeviceActions(DbLogService dbLogService)
+        {
+            _dbLogService = dbLogService;
+        }
+
         public static void ToggleArmedState()
         {
             VibrationDetector.AlarmArmed = !VibrationDetector.AlarmArmed;
@@ -116,7 +123,7 @@ namespace VibrationDetectors.Models
         }
 
 
-        public static DeviceLog SliderDebounceTimer_Tick_Stop()
+        public DeviceLog SliderDebounceTimer_Tick_Stop()
         {
             //FORTSÄTT HÄR! TODO se till att inte logga innan slider används!!! + dagbok från igår.
 
@@ -134,6 +141,8 @@ namespace VibrationDetectors.Models
 
             //11. Debug output
             Debug.WriteLine($"Slider committed value: {_pendingSliderValue}");
+
+            _dbLogService.CreateOne(tempDeviceLog);
 
             return tempDeviceLog;
         }
@@ -177,7 +186,57 @@ namespace VibrationDetectors.Models
             return deviceLog;
 
         }
+        public DeviceLog Btn_Armed_Click_Action()
+        {
+            LatestDateTimeStamp = DateTime.Now;
+            StatusAndErrorType errorType = StatusAndErrorType.Success;
 
+            //THIS MUST COME BEFORE DISARMING!!!
+            if (DeviceActions.GetTriggedState() == true)
+            {
+                //DeviceActions.ToggleTriggedState();
+                Btn_TriggedState_Action();
+            }
 
+            var oldUserValue = VibrationDetector.AlarmArmed;
+
+            //DeviceActions.Btn_Armed();
+            DeviceActions.ToggleArmedState();
+
+            var newUserValue = VibrationDetector.AlarmArmed;
+
+            var tempDeviceLog = CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.ArmDevice, errorType);
+
+            _dbLogService.CreateOne(tempDeviceLog);
+
+            return tempDeviceLog;
+        }
+        public DeviceLog Btn_TriggedState_Action()
+        {
+            //Better to update date here again!
+            LatestDateTimeStamp = DateTime.Now;
+            StatusAndErrorType errorType = StatusAndErrorType.Success;
+
+            var oldUserValue = VibrationDetector.AlarmTriggered;
+
+            //DeviceActions.Btn_Trigged();
+            if (!DeviceActions.GetArmedState())
+            {
+                //make sure the button does nothing if the device is not armed
+                errorType = StatusAndErrorType.FailedToTriggerAlarm;
+            }
+            else
+            {
+                DeviceActions.ToggleTriggedState();
+            }
+
+            var newUserValue = VibrationDetector.AlarmTriggered;
+
+            var tempDeviceLog = CompleteLogAction((oldUserValue == true) ? 1 : 0, (newUserValue == true) ? 1 : 0, DeviceAction.TriggerDevice, errorType);
+
+            _dbLogService.CreateOne(tempDeviceLog);
+
+            return tempDeviceLog;
+        }
     }
 }
